@@ -25,6 +25,10 @@ const userSchema = new mongoose.Schema({
       default: () => crypto.randomBytes(128).toString('hex'),
       unique: true,
     },
+    project: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Project'
+    }
 });
 
 userSchema.pre('save', async function (next) {
@@ -61,6 +65,10 @@ const authenticateUser = async (req, res, next) => {
 
 const User = mongoose.model('User', userSchema);
 
+const Project = new mongoose.model('Project', {
+  projectname: String,
+})
+
 //   PORT=9000 npm start
 const port = process.env.PORT || 8080;
 const app = express();
@@ -68,10 +76,6 @@ const app = express();
 // Add middlewares to enable cors and json body parsing
 app.use(cors());
 app.use(bodyParser.json());
-
-                // const authenticateUser = async (req, res, next) => {
-                //   next();
-                // };
 
 // Start defining your routes here
 app.get('/', (req, res) => {
@@ -115,6 +119,39 @@ app.get('/secret', authenticateUser);
 app.get('/secret/', async (req, res) => {
   const secretMessage = `This is a secret message for ${req.user.name}`;
   res.status(200).json({ secretMessage });
+});
+
+// Post a project
+app.post("/user/:id/project", async (req, res) => {
+  const singleUser = User.findById ({ _id })
+  const { projectname } = req.body;
+  try {
+    if (singleUser) {
+      const Project = await new Project({ 
+        projectname 
+      }).save();
+      res.status(200).json();
+    } else {
+      res.json(404).json({ error: err })
+      }
+    } catch (err) { 
+      res.status(404).json({ error: 'Project could not be created' });
+    }
+});
+
+app.post("/users", async (req, res) => {
+  try {
+    const { name, password } = req.body;
+      console.log(`Name: ${name}`);
+      console.log(`Password: ${password}`);
+    const user = await new User({
+      name,
+      password,
+    }).save();
+    res.status(200).json({ userId: user._id, accessToken: user.accessToken });
+  } catch (err) {
+    res.status(400).json({ message: 'Could not create user', errors: err });
+  }
 });
 
 // Start the server
