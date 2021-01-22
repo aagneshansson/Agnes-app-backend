@@ -31,6 +31,17 @@ const userSchema = new mongoose.Schema({
     }
 });
 
+const Project = new mongoose.model('Project', {
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  },
+  projectname: {
+    type: String,
+    default: "",
+  }
+})
+
 userSchema.pre('save', async function (next) {
   const user = this;
 
@@ -64,10 +75,6 @@ const authenticateUser = async (req, res, next) => {
 };
 
 const User = mongoose.model('User', userSchema);
-
-const Project = new mongoose.model('Project', {
-  projectname: String,
-})
 
 //   PORT=9000 npm start
 const port = process.env.PORT || 8080;
@@ -122,22 +129,18 @@ app.get('/secret/', async (req, res) => {
 });
 
 // Post a project
-app.post("/user/:id/project", async (req, res) => {
-  const singleUser = User.findById ({ _id })
-  const { projectname } = req.body;
-  try {
-    if (singleUser) {
-      const Project = await new Project({ 
-        projectname 
-      }).save();
-      res.status(200).json();
-    } else {
-      res.json(404).json({ error: err })
-      }
-    } catch (err) { 
-      res.status(404).json({ error: 'Project could not be created' });
+app.post("/project", authenticateUser);
+app.post("/project", async (req, res) => {
+//   const singleUser = User.findById ({ _id })
+//   const { projectname } = req.body;
+    try {
+      const createProject = { userId: req.user._id, ...req.body };
+      const project = await new Project(createProject).save();
+      res.status(200).json(project);
+    } catch (err) {
+      res.status(400).json({ message: "Could not create contact", errors: err })
     }
-});
+  });
 
 app.post("/users", async (req, res) => {
   try {
