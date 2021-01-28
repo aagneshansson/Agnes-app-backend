@@ -38,10 +38,11 @@ const Project = new mongoose.model('Project', {
   },
   projectname: {
     type: String,
-    default: "",
+    unique: true,
   }
 })
 
+// Pre-save - to check password validation before hashing the password 
 userSchema.pre('save', async function (next) {
   const user = this;
 
@@ -58,6 +59,7 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
+// To be able to authenticate the user check for coming endpoints
 const authenticateUser = async (req, res, next) => {
   try {
     const accessToken = req.header('Authorization');
@@ -77,12 +79,18 @@ const authenticateUser = async (req, res, next) => {
 const User = mongoose.model('User', userSchema);
 
 //   PORT=9000 npm start
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 8081;
 const app = express();
 
 // Add middlewares to enable cors and json body parsing
 app.use(cors());
 app.use(bodyParser.json());
+
+// To list all available endpoints on the starting page
+const listEndpoints = require('express-list-endpoints');
+app.get('/', (req, res) => {
+  res.send(listEndpoints(app));
+});
 
 // Start defining your routes here
 app.get('/', (req, res) => {
@@ -154,6 +162,18 @@ app.post("/users", async (req, res) => {
     res.status(200).json({ userId: user._id, accessToken: user.accessToken });
   } catch (err) {
     res.status(400).json({ message: 'Could not create user', errors: err });
+  }
+});
+
+// Endpoint for Log out
+app.post("/logout", authenticateUser);
+app.post("/logout", async (req, res) => {
+  try {
+    req.user.userId = null;
+    await req.user.save();
+    res.status(200).json({ loggedOut: true });
+  } catch (err) {
+    res.status(400).json({ error: 'Could not logout'})
   }
 });
 
