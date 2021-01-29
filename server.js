@@ -25,10 +25,10 @@ const userSchema = new mongoose.Schema({
       default: () => crypto.randomBytes(128).toString('hex'),
       unique: true,
     },
-    project: {
+    project: [{
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Project'
-    }
+      ref: 'Project',
+    }]
 });
 
 const Project = new mongoose.model('Project', {
@@ -39,6 +39,10 @@ const Project = new mongoose.model('Project', {
   projectname: {
     type: String,
     unique: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
   }
 })
 
@@ -79,7 +83,7 @@ const authenticateUser = async (req, res, next) => {
 const User = mongoose.model('User', userSchema);
 
 //   PORT=9000 npm start
-const port = process.env.PORT || 8081;
+const port = process.env.PORT || 8080;
 const app = express();
 
 // Add middlewares to enable cors and json body parsing
@@ -148,6 +152,13 @@ app.post("/project", async (req, res) => {
     } catch (err) {
       res.status(400).json({ message: "Could not create contact", errors: err })
     }
+  });
+
+  // Get projects to create a projectlist
+  app.get("/projectlist", authenticateUser);
+  app.get("/projectlist", async (req, res) => {
+    const projects = await Project.find().sort({ createdAt: 'desc' }).limit(20).exec();
+      res.json(projects);
   });
 
 app.post("/users", async (req, res) => {
