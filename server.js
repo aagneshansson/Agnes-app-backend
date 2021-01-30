@@ -64,21 +64,34 @@ userSchema.pre('save', async function (next) {
 });
 
 // To be able to authenticate the user check for coming endpoints
+// COMMENT OUT THIS AS IT's CAUSING ERROR 
+
+// const authenticateUser = async (req, res, next) => {
+//   try {
+//     const accessToken = req.header('Authorization');
+//     const user = await User.findOne({ accessToken });
+//       if (!user) {
+//         throw 'User not found';
+//       }
+//     req.user = user; 
+//   } catch (err) {
+//     const errorMessage = "Login failed, please try again!";
+//   console.log('AuthenticateUser function')
+//   res.status(401).json({ error: errorMessage });
+//   }
+//   next();
+// };
+
+// New authenticateUser which Karol helped me to create
 const authenticateUser = async (req, res, next) => {
-  try {
-    const accessToken = req.header('Authorization');
-    const user = await User.findOne({ accessToken });
-      if (!user) {
-        throw 'User not found';
-      }
-    req.user = user; 
-  } catch (err) {
-    const errorMessage = "Login failed, please try again!";
-  console.log('AuthenticateUser function')
-  res.status(401).json({ error: errorMessage });
+  const user = await User.findOne({ accessToken: req.header("Authorization") })
+  if (user) {
+    req.user = user
+    next()
+  } else {
+    res.status(403).json({ loggedOut: true })
   }
-  next();
-};
+}
 
 const User = mongoose.model('User', userSchema);
 
@@ -144,12 +157,11 @@ app.get('/secret/', async (req, res) => {
 app.post("/project", authenticateUser);
 app.post("/project", async (req, res) => {
     try {
+      const { userId } = req.user._id;
       const { projectname } = req.body;
       const project = await new Project({
-        projectname
+        projectname, userId
       }).save();
-      //const createProject = { userId: req.user._id, ...req.body };
-      //const project = await new Project(createProject).save();
       res.status(200).json(project);
     } catch (err) {
       res.status(400).json({ message: "Could not create contact", errors: err })
@@ -159,7 +171,7 @@ app.post("/project", async (req, res) => {
 // Get projects to create a projectlist
 app.get('/projectlist', authenticateUser);
 app.get('/projectlist', async (req, res) => {
-  const projects = await Project.find({ userId: req.user._id })
+  const projects = await Project.find({ userId })
     .sort({ createdAt: 'desc' })
     .limit(20)
     .exec();
