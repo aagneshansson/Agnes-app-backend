@@ -143,52 +143,42 @@ app.get('/secret/', async (req, res) => {
 // Post a project
 app.post("/project", authenticateUser);
 app.post("/project", async (req, res) => {
-//   const singleUser = User.findById ({ _id })
-//   const { projectname } = req.body;
     try {
-      const createProject = { userId: req.user._id, ...req.body };
-      const project = await new Project(createProject).save();
+      const { projectname } = req.body;
+      const project = await new Project({
+        projectname
+      }).save();
+      //const createProject = { userId: req.user._id, ...req.body };
+      //const project = await new Project(createProject).save();
       res.status(200).json(project);
     } catch (err) {
       res.status(400).json({ message: "Could not create contact", errors: err })
     }
   });
 
-  // Get projects to create a projectlist
-  app.get("/projectlist", authenticateUser);
-  app.get("/projectlist", async (req, res) => {
-    const projects = await Project.find().sort({ createdAt: 'desc' }).limit(20).exec();
-      res.json(projects);
-  });
-
-app.post("/users", async (req, res) => {
-  try {
-    const { name, password } = req.body;
-      console.log(`Name: ${name}`);
-      console.log(`Password: ${password}`);
-    const user = await new User({
-      name,
-      password,
-    }).save();
-    res.status(200).json({ userId: user._id, accessToken: user.accessToken });
-  } catch (err) {
-    res.status(400).json({ message: 'Could not create user', errors: err });
-  }
+// Get projects to create a projectlist
+app.get('/projectlist', authenticateUser);
+app.get('/projectlist', async (req, res) => {
+  const projects = await Project.find({ userId: req.user._id })
+    .sort({ createdAt: 'desc' })
+    .limit(20)
+    .exec();
+  res.json(projects);
 });
-
+    
 // Endpoint for Log out
 app.post("/logout", authenticateUser);
 app.post("/logout", async (req, res) => {
-  try {
-    req.user.userId = null;
-    await req.user.save();
-    res.status(200).json({ loggedOut: true });
-  } catch (err) {
-    res.status(400).json({ error: 'Could not logout'})
-  }
-});
-
-// Start the server
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`)
-});
+    try {
+      req.user.userId = null;
+      await req.user.save();
+      res.status(200).json({ loggedOut: true });
+    } catch (err) {
+      res.status(400).json({ error: 'Could not logout'})
+    }
+  });
+  
+  // Start the server
+  app.listen(port, () => {
+    console.log(`Server running on http://localhost:${port}`)
+  });
