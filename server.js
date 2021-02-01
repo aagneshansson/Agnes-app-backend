@@ -46,7 +46,15 @@ const Project = new mongoose.model('Project', {
     type: Date,
     default: Date.now,
   },
-  // memberID och connecta i projectlist 
+  memberId: [{
+    // type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  // members: [{
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: 'User'
+  // }],
 })
 
 // Pre-save - to check password validation before hashing the password 
@@ -137,17 +145,19 @@ app.get('/secret/', async (req, res) => {
   res.status(200).json({ secretMessage })
 })
 
-// Post a project - AGNES
-// app.post("/project", authenticateUser);
+// Post a project
 app.post("/project", authenticateUser, async (req, res) => {
     try {
       const userId = req.user._id;
-      console.log(req.user._id)
-      console.log(userId)
-      // const { projectname } = req.body;
+        console.log(`This is the req.user._id ${req.user._id}`)
+        console.log(`This is the userId ${userId}`)
       const projectname = req.body.projectname;
+      const memberId = req.body.memberId;
+
+      console.log(`This is the memberId ${memberId}`)
+
       const project = await new Project({
-        projectname, userId
+        projectname, userId, memberId: memberId
       }).save();
       console.log(project)
       res.status(200).json(project);
@@ -161,6 +171,7 @@ app.post("/project", authenticateUser, async (req, res) => {
 app.get('/projectlist', authenticateUser);
 app.get('/projectlist', async (req, res) => {
   const userId = req.user._id;
+  
   const projects = await Project.find({ userId })
     .populate('userId')
     .sort({ createdAt: 'desc' })
@@ -170,6 +181,33 @@ app.get('/projectlist', async (req, res) => {
 // const user = await User.findById(projects[0].userId)
 // console.log(projects[0].userId.name)
   res.json(projects);
+});
+
+//THIS WAS A TEST TO GET MEMBER ID PROJECTS 
+app.get('/member', authenticateUser);
+app.get('/member', async (req, res) => {
+  const userId = req.user._id;
+  
+  const members = await Project.find({ "memberId": userId })
+    // .populate('userId')
+    // .sort({ createdAt: 'desc' })
+    // .limit(20)
+    .exec();
+    console.log(userId);
+// const user = await User.findById(projects[0].userId)
+// const user = await User.findById(projects[0].userId)
+// console.log(projects[0].userId.name)
+  res.json(members);
+  //     const userId = req.user._id;
+//     console.log(`userId in projectlist ${userId}`)
+//     const memberId = req.user.members;
+//     console.log(`MemberId in projectlist ${memberId}`)
+//     const allprojects = await Project.find({ userId, memberId })
+//     console.log(allprojects);
+//   if (allprojects) {
+//     res.status(allprojects);
+//   } else { res.status(404).json({ error: "Could not find list"})
+// }
 });
 
 // Endpoint for Log out
