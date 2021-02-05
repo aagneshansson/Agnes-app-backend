@@ -122,6 +122,13 @@ app.post("/users", async (req, res) => {
   }
 })
 
+// Get all users
+app.get('/allusers', authenticateUser);
+app.get('/allusers', async (req, res) => {
+  const users = await User.find();
+  res.json(users);
+})
+
 // Login user
 app.post("/sessions", async (req, res) => {
   try {
