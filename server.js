@@ -36,7 +36,6 @@ const userSchema = new mongoose.Schema({
 const Project = new mongoose.model('Project', {
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    //type: String,
     ref: 'User',
   },
   projectname: {
@@ -51,10 +50,6 @@ const Project = new mongoose.model('Project', {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   }],
-  // members: [{
-  //   type: mongoose.Schema.Types.ObjectId,
-  //   ref: 'User'
-  // }],
 })
 
 // Pre-save - to check password validation before hashing the password 
@@ -74,7 +69,7 @@ userSchema.pre('save', async function (next) {
   next()
 })
 
-// New authenticateUser which Karol helped me to create
+// Authenticate the user 
 const authenticateUser = async (req, res, next) => {
   const user = await User.findOne({ accessToken: req.header("Authorization") }).populate("project")
   if (user) {
@@ -85,9 +80,10 @@ const authenticateUser = async (req, res, next) => {
   }
 }
 
+// Declaring the user model 
 const User = mongoose.model('User', userSchema)
 
-//   PORT=9000 npm start
+// PORT=9000 npm start
 const port = process.env.PORT || 8080
 const app = express()
 
@@ -96,14 +92,8 @@ app.use(cors())
 app.use(bodyParser.json())
 
 // To list all available endpoints on the starting page
-
 app.get('/', (req, res) => {
   res.send(listEndpoints(app))
-})
-
-// Start defining your routes here
-app.get('/', (req, res) => {
-  res.send('Hi, welcome to our server')
 })
 
 // Create user - sign up
@@ -174,6 +164,7 @@ app.post("/project", authenticateUser, async (req, res) => {
     }
   });
 
+
 //Get projects to create a projectlist - AGNES
 app.get('/projectlist', authenticateUser);
 app.get('/projectlist', async (req, res) => {
@@ -185,12 +176,11 @@ app.get('/projectlist', async (req, res) => {
     .limit(20)
     .exec();
 // const user = await User.findById(projects[0].userId)
-// const user = await User.findById(projects[0].userId)
 // console.log(projects[0].userId.name)
   res.json(projects);
 });
 
-//THIS WAS A TEST TO GET MEMBER ID PROJECTS 
+// Get all the projects a user are a member of 
 app.get('/member', authenticateUser);
 app.get('/member', async (req, res) => {
   const userId = req.user._id;
@@ -201,9 +191,6 @@ app.get('/member', async (req, res) => {
     // .limit(20)
     .exec();
     console.log(userId);
-// const user = await User.findById(projects[0].userId)
-// const user = await User.findById(projects[0].userId)
-// console.log(projects[0].userId.name)
   res.json(members);
   //     const userId = req.user._id;
 //     console.log(`userId in projectlist ${userId}`)
