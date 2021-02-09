@@ -8,7 +8,12 @@ import listEndpoints from 'express-list-endpoints'
 
 const mongoUrl = process.env.MONGO_URL || "mongodb://localhost/agnes"
 mongoose.set('useCreateIndex', true)
-mongoose.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(mongoUrl, { 
+  useNewUrlParser: true, 
+  useUnifiedTopology: true,
+  useCreateIndex: true, // To get rid of deprecation warning regarding collection.ensureIndex
+  useFindAndModify: false // To get rid of deprecation warning regarding findOneAndUpdate()
+})
 mongoose.Promise = Promise
 
 const userSchema = new mongoose.Schema({
