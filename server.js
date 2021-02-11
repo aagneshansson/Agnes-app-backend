@@ -210,7 +210,8 @@ app.get('/member', async (req, res) => {
 });
 
 // Endpoint to DELETE a project
-app.delete('/project/:id/delete', authenticateUser, async (req, res) => {
+app.get('/delete/:id', authenticateUser);
+app.delete('/delete/:id', async (req, res) => {
   try {
     await Project.deleteOne({ _id });
     console.log(`This is the req.user._id ${req.user._id}`)
