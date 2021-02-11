@@ -6,7 +6,7 @@ import crypto from "crypto"
 import bcrypt from 'bcrypt'
 import listEndpoints from 'express-list-endpoints'
 
-const mongoUrl = process.env.MONGO_URL || "mongodb://localhost/agnes"
+const mongoUrl = process.env.MONGO_URL || "mongodb://localhost/organizeit"
 mongoose.set('useCreateIndex', true)
 mongoose.connect(mongoUrl, { 
   useNewUrlParser: true, 
