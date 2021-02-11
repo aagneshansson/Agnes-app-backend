@@ -195,7 +195,7 @@ app.get('/member', async (req, res) => {
     // .sort({ createdAt: 'desc' })
     // .limit(20)
     .exec();
-    members.forEach(member => member.populate("userId", "name"))
+    members.forEach(member => member.populate("name"))
     console.log(userId);
     res.json(members);
     console.log(members)
