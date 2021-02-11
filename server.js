@@ -226,7 +226,7 @@ app.get('/member', async (req, res) => {
 //   }
 // })
 
-app.delete('/delete/:id', async (req, res) => {
+app.delete('/delete/:projectId', async (req, res) => {
   const { projectId } = req.params;
   try {
     await Project.deleteOne({ _id: projectId });
