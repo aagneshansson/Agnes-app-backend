@@ -212,7 +212,7 @@ app.get('/member', async (req, res) => {
 // Endpoint to DELETE a project
 app.delete('/project/:id/delete', authenticateUser, async (req, res) => {
   try {
-    await Project.deleteOne({ _id: req.params._id });
+    await Project.deleteOne({ _id });
     console.log(`This is the req.user._id ${req.user._id}`)
     console.log(`This is the _id ${_id}`)
     res.status(200).json({ message: 'Project deleted' })
