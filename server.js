@@ -194,11 +194,10 @@ app.get('/member', async (req, res) => {
     // .populate('userId')
     // .sort({ createdAt: 'desc' })
     // .limit(20)
-    .exec();
-    members.forEach(member => member.populate("name"))
+    // .exec();
+    members.forEach(member => member.populate("userId"))
     console.log(userId);
     res.json(members);
-    console.log(members)
 
   //     const userId = req.user._id;
   //     console.log(`userId in projectlist ${userId}`)
