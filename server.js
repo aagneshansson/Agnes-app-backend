@@ -213,8 +213,8 @@ app.get('/member', async (req, res) => {
 app.get('/delete/:id', authenticateUser);
 app.delete('/delete/:id', async (req, res) => {
   try {
-    await Project.deleteOne({ _id });
-    console.log(`This is the req.user._id ${req.user._id}`)
+    await Project.deleteOne({ _id: req.params.id });
+    console.log(`This is the req.params._id ${req.params._id}`)
     console.log(`This is the _id ${_id}`)
     res.status(200).json({ message: 'Project deleted' })
   } catch (err) {
