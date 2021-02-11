@@ -181,8 +181,6 @@ app.get('/projectlist', async (req, res) => {
     .sort({ createdAt: 'desc' })
     .limit(20)
     .exec();
-  // const user = await User.findById(projects[0].userId)
-  // console.log(projects[0].userId.name)
   res.json(projects);
 });
 
@@ -194,37 +192,10 @@ app.get('/member', async (req, res) => {
   const members = await Project.find({ "memberId": userId })
   .populate('userId')
     // .sort({ createdAt: 'desc' })
-    // .limit(20)
   .exec();
     members.forEach(member => member.populate("userId"))
   res.json(members);
-
-  //     const userId = req.user._id;
-  //     console.log(`userId in projectlist ${userId}`)
-  //     const memberId = req.user.members;
-  //     console.log(`MemberId in projectlist ${memberId}`)
-  //     const allprojects = await Project.find({ userId, memberId })
-  //     console.log(allprojects);
-  //   if (allprojects) {
-  //     res.status(allprojects);
-  //   } else { res.status(404).json({ error: "Could not find list"})
-  // }
 });
-
-// Endpoint to DELETE a project
-// app.delete('/delete/:id', authenticateUser);
-// app.delete('/delete/:id', async (req, res) => {
-//   try {
-//     // const _id = req.params.id;
-//     await Project.deleteOne({ _id: req.params._id });
-//     res.status(200).json({ message: 'Project deleted' })
-//   } catch (err) {
-//     res.status(400).json({
-//       message: 'Could not delete project',
-//       error: err
-//     })
-//   }
-// })
 
 app.delete('/delete/:projectId', async (req, res) => {
   const { projectId } = req.params;
