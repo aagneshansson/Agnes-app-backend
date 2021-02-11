@@ -8,8 +8,8 @@ import listEndpoints from 'express-list-endpoints'
 
 const mongoUrl = process.env.MONGO_URL || "mongodb://localhost/organizeit"
 mongoose.set('useCreateIndex', true)
-mongoose.connect(mongoUrl, { 
-  useNewUrlParser: true, 
+mongoose.connect(mongoUrl, {
+  useNewUrlParser: true,
   useUnifiedTopology: true,
   useCreateIndex: true, // To get rid of deprecation warning regarding collection.ensureIndex
   useFindAndModify: false // To get rid of deprecation warning regarding findOneAndUpdate()
@@ -149,39 +149,39 @@ app.get('/secret/', async (req, res) => {
 
 // Post a project
 app.post("/project", authenticateUser, async (req, res) => {
-    try {
-      const userId = req.user._id;
-        console.log(`This is the req.user._id ${req.user._id}`)
-        console.log(`This is the userId ${userId}`)
-      const projectname = req.body.projectname;
-      const memberId = req.body.memberId;
+  try {
+    const userId = req.user._id;
+    console.log(`This is the req.user._id ${req.user._id}`)
+    console.log(`This is the userId ${userId}`)
+    const projectname = req.body.projectname;
+    const memberId = req.body.memberId;
 
-      console.log(`This is the memberId ${memberId}`)
+    console.log(`This is the memberId ${memberId}`)
 
-      const project = await new Project({
-        projectname, userId, memberId: memberId
-      }).save();
-      console.log(project)
-      res.status(200).json(project);
-    } catch (err) {
-      res.status(400).json({ message: "Could not create project", errors: err 
+    const project = await new Project({
+      projectname, userId, memberId: memberId
+    }).save();
+    console.log(project)
+    res.status(200).json(project);
+  } catch (err) {
+    res.status(400).json({
+      message: "Could not create project", errors: err
     })
-    }
-  });
-
+  }
+});
 
 //Get projects to create a projectlist - AGNES
 app.get('/projectlist', authenticateUser);
 app.get('/projectlist', async (req, res) => {
   const userId = req.user._id;
-  
+
   const projects = await Project.find({ userId })
     .populate('userId')
     .sort({ createdAt: 'desc' })
     .limit(20)
     .exec();
-// const user = await User.findById(projects[0].userId)
-// console.log(projects[0].userId.name)
+  // const user = await User.findById(projects[0].userId)
+  // console.log(projects[0].userId.name)
   res.json(projects);
 });
 
@@ -189,25 +189,40 @@ app.get('/projectlist', async (req, res) => {
 app.get('/member', authenticateUser);
 app.get('/member', async (req, res) => {
   const userId = req.user._id;
-  
+
   const members = await Project.find({ "memberId": userId })
     // .populate('userId')
     // .sort({ createdAt: 'desc' })
     // .limit(20)
     .exec();
-    console.log(userId);
+  console.log(userId);
   res.json(members);
   //     const userId = req.user._id;
-//     console.log(`userId in projectlist ${userId}`)
-//     const memberId = req.user.members;
-//     console.log(`MemberId in projectlist ${memberId}`)
-//     const allprojects = await Project.find({ userId, memberId })
-//     console.log(allprojects);
-//   if (allprojects) {
-//     res.status(allprojects);
-//   } else { res.status(404).json({ error: "Could not find list"})
-// }
+  //     console.log(`userId in projectlist ${userId}`)
+  //     const memberId = req.user.members;
+  //     console.log(`MemberId in projectlist ${memberId}`)
+  //     const allprojects = await Project.find({ userId, memberId })
+  //     console.log(allprojects);
+  //   if (allprojects) {
+  //     res.status(allprojects);
+  //   } else { res.status(404).json({ error: "Could not find list"})
+  // }
 });
+
+// Endpoint to DELETE a project
+app.delete('/project/:id/delete', authenticateUser, async (req, res) => {
+  try {
+    await Project.deleteOne({ _id: req.params._id });
+    console.log(`This is the req.user._id ${req.user._id}`)
+    console.log(`This is the _id ${_id}`)
+    res.status(200).json({ message: 'Project deleted' })
+  } catch (err) {
+    res.status(400).json({
+      message: 'Could not delete project',
+      error: err
+    })
+  }
+})
 
 // Endpoint for Log out
 app.post("/logout", authenticateUser)
