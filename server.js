@@ -177,6 +177,7 @@ app.get('/projectlist', async (req, res) => {
 
   const projects = await Project.find({ userId })
     .populate('userId')
+    // .populate('memberId')
     .sort({ createdAt: 'desc' })
     .limit(20)
     .exec();
@@ -212,13 +213,26 @@ app.get('/member', async (req, res) => {
 
 // Endpoint to DELETE a project
 // app.delete('/delete/:id', authenticateUser);
+// app.delete('/delete/:id', async (req, res) => {
+//   try {
+//     // const _id = req.params.id;
+//     await Project.deleteOne({ _id: req.params._id });
+//     res.status(200).json({ message: 'Project deleted' })
+//   } catch (err) {
+//     res.status(400).json({
+//       message: 'Could not delete project',
+//       error: err
+//     })
+//   }
+// })
+
 app.delete('/delete/:id', async (req, res) => {
+  const { projectId } = req.params;
   try {
-    // const _id = req.params.id;
-    await Project.deleteOne({ _id: req.params._id });
+    await Project.deleteOne({ _id: projectId });
     res.status(200).json({ message: 'Project deleted' })
   } catch (err) {
-    res.status(400).json({
+    res.status(500).json({
       message: 'Could not delete project',
       error: err
     })
