@@ -1,10 +1,10 @@
-import express from 'express'
-import bodyParser from 'body-parser'
-import cors from 'cors'
-import mongoose from 'mongoose'
-import crypto from "crypto"
-import bcrypt from 'bcrypt'
-import listEndpoints from 'express-list-endpoints'
+import express from 'express';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import mongoose from 'mongoose';
+import crypto from 'crypto';
+import bcrypt from 'bcrypt';
+import listEndpoints from 'express-list-endpoints';
 
 const mongoUrl = process.env.MONGO_URL || "mongodb://localhost/organizeit"
 mongoose.set('useCreateIndex', true)
@@ -14,7 +14,7 @@ mongoose.connect(mongoUrl, {
   useCreateIndex: true, // To get rid of deprecation warning regarding collection.ensureIndex
   useFindAndModify: false // To get rid of deprecation warning regarding findOneAndUpdate()
 })
-mongoose.Promise = Promise
+mongoose.Promise = Promise;
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Project',
   }]
-})
+});
 
 const Project = new mongoose.model('Project', {
   userId: {
@@ -51,11 +51,10 @@ const Project = new mongoose.model('Project', {
     default: Date.now,
   },
   memberId: [{
-    // type: String,
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   }],
-})
+});
 
 // Pre-save - to check password validation before hashing the password 
 userSchema.pre('save', async function (next) {
@@ -72,7 +71,7 @@ userSchema.pre('save', async function (next) {
 
   //Continue with save
   next()
-})
+});
 
 // Authenticate the user 
 const authenticateUser = async (req, res, next) => {
@@ -83,23 +82,23 @@ const authenticateUser = async (req, res, next) => {
   } else {
     res.status(403).json({ loggedOut: true })
   }
-}
+};
 
 // Declaring the user model 
-const User = mongoose.model('User', userSchema)
+const User = mongoose.model('User', userSchema);
 
 // PORT=9000 npm start
-const port = process.env.PORT || 8080
-const app = express()
+const port = process.env.PORT || 8080;
+const app = express();
 
 // Add middlewares to enable cors and json body parsing
-app.use(cors())
-app.use(bodyParser.json())
+app.use(cors());
+app.use(bodyParser.json());
 
 // To list all available endpoints on the starting page
 app.get('/', (req, res) => {
   res.send(listEndpoints(app))
-})
+});
 
 // Create user - sign up
 app.post("/users", async (req, res) => {
@@ -115,14 +114,14 @@ app.post("/users", async (req, res) => {
   } catch (err) {
     res.status(400).json({ message: 'Could not create user', errors: err })
   }
-})
+});
 
 // Get all users
 app.get('/allusers', authenticateUser);
 app.get('/allusers', async (req, res) => {
   const users = await User.find();
   res.json(users);
-})
+});
 
 // Login user
 app.post("/sessions", async (req, res) => {
@@ -139,13 +138,13 @@ app.post("/sessions", async (req, res) => {
   } catch (err) {
     res.status(404).json({ error: 'User not found' })
   }
-})
+});
 
 app.get('/secret', authenticateUser)
 app.get('/secret/', async (req, res) => {
   const secretMessage = `This is a secret message for ${req.user.name}`
   res.status(200).json({ secretMessage })
-})
+});
 
 // Post a project
 app.post("/project", authenticateUser, async (req, res) => {
@@ -170,14 +169,13 @@ app.post("/project", authenticateUser, async (req, res) => {
   }
 });
 
-//Get projects to create a projectlist - AGNES
+//Get projects to create a projectlist 
 app.get('/projectlist', authenticateUser);
 app.get('/projectlist', async (req, res) => {
   const userId = req.user._id;
 
   const projects = await Project.find({ userId })
     .populate('userId')
-    // .populate('memberId')
     .sort({ createdAt: 'desc' })
     .limit(20)
     .exec();
@@ -190,10 +188,10 @@ app.get('/member', async (req, res) => {
   const userId = req.user._id;
 
   const members = await Project.find({ "memberId": userId })
-  .populate('userId')
-    // .sort({ createdAt: 'desc' })
-  .exec();
-    members.forEach(member => member.populate("userId"))
+    .populate('userId')
+    .sort({ createdAt: 'desc' })
+    .exec();
+  members.forEach(member => member.populate("userId"))
   res.json(members);
 });
 
@@ -208,7 +206,7 @@ app.delete('/delete/:projectId', async (req, res) => {
       error: err
     })
   }
-})
+});
 
 // Endpoint for Log out
 app.post("/logout", authenticateUser)
@@ -220,9 +218,9 @@ app.post("/logout", async (req, res) => {
   } catch (err) {
     res.status(400).json({ error: 'Could not logout' })
   }
-})
+});
 
 // Start the server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`)
-})
+});
